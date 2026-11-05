@@ -1,12 +1,12 @@
 {
-  "name": "Escala Igreja Viver",
-  "short_name": "Escala",
+  "name": "Escala Viver Church",
+  "short_name": "Escala Viver",
   "description": "Sua escala de serviço na Igreja Viver",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f4f6f9",
-  "theme_color": "#1f3a5f",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
   "lang": "pt-BR",
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },

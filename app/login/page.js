@@ -51,8 +51,10 @@ export default function LoginPage() {
   return (
     <main className="page">
       <div className="marca">
-        <img src="/icons/icon-192.png" alt="" />
-        <h1>Escala Igreja Viver</h1>
+        <img src="/logo.png" alt="Viver Church" />
+        <h1>
+          Escala <span>Viver Church</span>
+        </h1>
         <p>Veja quando você serve e receba o aviso no celular.</p>
       </div>
 

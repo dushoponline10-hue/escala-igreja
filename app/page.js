@@ -46,9 +46,14 @@ export default async function MinhasEscalas() {
   return (
     <main className="page">
       <header className="topo">
-        <div>
-          <h1>Olá{primeiroNome ? `, ${primeiroNome}` : ''}!</h1>
-          <p className="sub">Suas próximas escalas</p>
+        <div className="marca-topo">
+          <img src="/logo.png" alt="Viver Church" />
+          <div>
+            <h1>
+              Olá{primeiroNome ? <>, <span>{primeiroNome}</span></> : ''}
+            </h1>
+            <p className="sub">Suas próximas escalas</p>
+          </div>
         </div>
         {perfil?.is_admin && (
           <Link href="/admin" className="btn sec peq">

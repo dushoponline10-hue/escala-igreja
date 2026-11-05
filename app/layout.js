@@ -1,10 +1,15 @@
+import '@fontsource/anton/400.css'
+import '@fontsource/montserrat/400.css'
+import '@fontsource/montserrat/600.css'
+import '@fontsource/montserrat/700.css'
+import '@fontsource/montserrat/800.css'
 import './globals.css'
 
 export const metadata = {
-  title: 'Escala Igreja Viver',
-  description: 'Sua escala de serviço na Igreja Viver, com aviso no celular.',
+  title: 'Escala Viver Church',
+  description: 'Sua escala de serviço na Viver Church, com aviso no celular.',
   manifest: '/manifest.webmanifest',
-  appleWebApp: { capable: true, title: 'Escala', statusBarStyle: 'default' },
+  appleWebApp: { capable: true, title: 'Escala Viver', statusBarStyle: 'black' },
   icons: {
     icon: '/icons/icon-192.png',
     apple: '/icons/apple-touch-icon.png',
@@ -14,7 +19,7 @@ export const metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#1f3a5f',
+  themeColor: '#0a0a0a',
 }
 
 export default function RootLayout({ children }) {

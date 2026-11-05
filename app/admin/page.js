@@ -50,9 +50,14 @@ export default async function Admin() {
   return (
     <main className="page">
       <header className="topo">
-        <div>
-          <h1>Montar escalas</h1>
-          <p className="sub">Painel da liderança</p>
+        <div className="marca-topo">
+          <img src="/logo.png" alt="Viver Church" />
+          <div>
+            <h1>
+              Montar <span>escalas</span>
+            </h1>
+            <p className="sub">Painel da liderança</p>
+          </div>
         </div>
         <Link href="/" className="btn sec peq">
           Voltar
