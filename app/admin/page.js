@@ -137,7 +137,7 @@ export default async function Admin() {
 
       <section className="card">
         <h2>Avisos para todos</h2>
-        <p className="nota">Todos os cadastrados recebem o aviso na véspera e no dia.</p>
+        <p className="nota">Todos os cadastrados recebem o aviso na véspera e no dia (às 7h). Marque "Avisar todos agora" para mandar também na hora.</p>
         <ul className="lista-simples">
           {avisos?.map((a) => (
             <li key={a.id}>
@@ -166,7 +166,10 @@ export default async function Admin() {
             </div>
           </div>
           <label htmlFor="descricao">Detalhes (opcional)</label>
-          <input id="descricao" name="descricao" />
+          <input id="descricao" name="descricao" placeholder="Ex.: reunião de líderes no salão" />
+          <label className="checa">
+            <input type="checkbox" name="agora" defaultChecked /> Avisar todos agora também
+          </label>
           <BotaoEnviar className="btn full">Criar aviso</BotaoEnviar>
         </form>
       </section>

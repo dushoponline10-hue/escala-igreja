@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { enviarParaPessoa } from '@/lib/push'
 
 async function exigirAdmin() {
   const supabase = await createClient()
@@ -86,12 +87,19 @@ export async function criarAviso(formData) {
   const titulo = formData.get('titulo')?.trim()
   const data = formData.get('data')
   if (!titulo || !data) return
-  await supabase.from('avisos').insert({
-    titulo,
-    data,
-    horario: formData.get('horario') || null,
-    descricao: formData.get('descricao')?.trim() || null,
-  })
+  const horario = formData.get('horario') || null
+  const descricao = formData.get('descricao')?.trim() || null
+  await supabase.from('avisos').insert({ titulo, data, horario, descricao })
+
+  // "Avisar todos agora": manda a notificação na hora para todos os cadastrados
+  if (formData.get('agora')) {
+    const [a, m, d] = data.split('-')
+    const quando = `${d}/${m}${horario ? ` às ${horario.slice(0, 5)}` : ''}`
+    const payload = { title: `📢 ${titulo}`, body: `${quando}.${descricao ? ' ' + descricao : ''}`, url: '/' }
+    const admin = createAdminClient()
+    const { data: pessoas } = await admin.from('profiles').select('id')
+    await Promise.all((pessoas || []).map((p) => enviarParaPessoa(admin, p.id, payload)))
+  }
   atualizar()
 }
 

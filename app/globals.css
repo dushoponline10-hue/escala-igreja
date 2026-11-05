@@ -156,3 +156,6 @@ input:focus, select:focus { outline: 2px solid var(--yellow); outline-offset: 1p
 .marca p { color: var(--muted); margin: 0; font-size: 1.05rem; }
 
 .rodape { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 22px; }
+
+.checa { display: flex; align-items: center; gap: 10px; text-transform: none; letter-spacing: 0; font-size: 1rem; font-weight: 600; margin-top: 16px; }
+.checa input { width: 20px; height: 20px; accent-color: var(--yellow); }
