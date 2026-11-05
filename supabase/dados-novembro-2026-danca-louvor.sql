@@ -91,3 +91,12 @@ from (values
 join public.ministerios m on m.nome = v.ministerio
 where not exists (select 1 from public.escalas e where e.data=v.data and e.ministerio_id=m.id and e.membro_nome=v.nome and e.funcao=v.funcao);
 select p.nome, public.vincular_escalas(p.id, p.nome) as ligadas from public.profiles p;
+
+-- Ajustes confirmados pelo Eduardo: bateria do domingo de manhã é o Eduardo; "Cris" é a Cristiane
+insert into public.escalas (data, horario, ministerio_id, funcao, membro_nome, observacao)
+select d::date, '09:00', m.id, 'Culto de domingo de manhã', 'Eduardo', 'Bateria'
+from unnest(array['2026-11-08','2026-11-15','2026-11-22','2026-11-29']) as d
+join public.ministerios m on m.nome = 'Louvor'
+where not exists (select 1 from public.escalas e where e.data = d::date and e.ministerio_id = m.id
+  and e.funcao = 'Culto de domingo de manhã' and e.membro_nome = 'Eduardo');
+update public.escalas set membro_nome = 'Cristiane' where membro_nome = 'Cris';
