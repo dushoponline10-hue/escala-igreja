@@ -58,6 +58,10 @@ body {
   border-radius: 99px; background: var(--accent); color: #2b1a00; margin-bottom: 4px;
 }
 .equipe { font-size: .85rem; color: var(--muted); margin-top: 4px; }
+.tag.sem-conta { background: var(--line); color: var(--muted); margin: 0 0 0 6px; }
+.tag.geral { background: var(--brand-soft); color: var(--brand); }
+.nota { color: var(--muted); font-size: .88rem; margin: -4px 0 10px; }
+.inline select { width: auto; max-width: 150px; padding: 6px 8px; }
 
 .vazio { color: var(--muted); text-align: center; padding: 20px 8px; }
 

@@ -9,6 +9,9 @@ import {
   criarMinisterio,
   removerMinisterio,
   alternarAdmin,
+  vincularNome,
+  criarAviso,
+  removerAviso,
 } from './actions'
 
 export const dynamic = 'force-dynamic'
@@ -21,20 +24,28 @@ export default async function Admin() {
   const { data: eu } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single()
   if (!eu?.is_admin) redirect('/')
 
-  const [{ data: ministerios }, { data: pessoas }, { data: escalas }] = await Promise.all([
+  const [{ data: ministerios }, { data: pessoas }, { data: escalas }, { data: avisos }] = await Promise.all([
     supabase.from('ministerios').select('id, nome').order('nome'),
     supabase.from('profiles').select('id, nome, telefone, is_admin').order('nome'),
     supabase
       .from('escalas')
-      .select('id, data, horario, funcao, ministerios(nome), profiles(nome)')
+      .select('id, data, horario, funcao, membro_id, membro_nome, ministerios(nome), profiles(nome)')
       .gte('data', dataBR(0))
       .order('data')
       .order('horario'),
+    supabase.from('avisos').select('id, titulo, data, horario, descricao').gte('data', dataBR(0)).order('data'),
   ])
 
   // agrupa por data
   const porData = {}
   for (const e of escalas || []) (porData[e.data] ||= []).push(e)
+
+  // nomes escalados que ainda não criaram conta
+  const semConta = {}
+  for (const e of escalas || []) {
+    if (!e.membro_id && e.membro_nome) semConta[e.membro_nome] = (semConta[e.membro_nome] || 0) + 1
+  }
+  const nomesSemConta = Object.keys(semConta).sort((a, b) => a.localeCompare(b, 'pt-BR'))
 
   return (
     <main className="page">
@@ -61,7 +72,7 @@ export default async function Admin() {
               <input id="horario" name="horario" type="time" />
             </div>
           </div>
-          <label htmlFor="ministerio_id">Ministério</label>
+          <label htmlFor="ministerio_id">Função</label>
           <select id="ministerio_id" name="ministerio_id" required defaultValue="">
             <option value="" disabled>
               Escolha
@@ -72,10 +83,10 @@ export default async function Admin() {
               </option>
             ))}
           </select>
-          <label htmlFor="funcao">Função (opcional)</label>
-          <input id="funcao" name="funcao" placeholder="Ex.: vocal, câmera, porta principal" />
+          <label htmlFor="funcao">Detalhe (opcional)</label>
+          <input id="funcao" name="funcao" placeholder="Ex.: culto da noite, vocal, câmera" />
           <label htmlFor="observacao">Observação (opcional)</label>
-          <input id="observacao" name="observacao" placeholder="Ex.: chegar 30 min antes para ensaio" />
+          <input id="observacao" name="observacao" placeholder="Ex.: chegar 30 min antes" />
           <label>Quem vai servir</label>
           <div className="pessoas">
             {!pessoas?.length && <span className="vazio">Ninguém cadastrado ainda.</span>}
@@ -85,6 +96,8 @@ export default async function Admin() {
               </label>
             ))}
           </div>
+          <label htmlFor="nomes">Quem ainda não tem conta (opcional)</label>
+          <input id="nomes" name="nomes" placeholder="Nomes separados por vírgula. Ex.: Fernanda, João Pedro" />
           <BotaoEnviar className="btn full">Salvar escala</BotaoEnviar>
         </form>
       </section>
@@ -99,7 +112,8 @@ export default async function Admin() {
               {lista.map((e) => (
                 <li key={e.id}>
                   <span>
-                    <strong>{e.profiles?.nome}</strong> · {e.ministerios?.nome}
+                    <strong>{e.profiles?.nome || e.membro_nome}</strong>
+                    {!e.membro_id && <span className="tag sem-conta">sem conta</span>} · {e.ministerios?.nome}
                     {e.funcao ? ` (${e.funcao})` : ''}
                     {e.horario ? ` · ${e.horario.slice(0, 5)}` : ''}
                   </span>
@@ -117,7 +131,78 @@ export default async function Admin() {
       </section>
 
       <section className="card">
-        <h2>Ministérios</h2>
+        <h2>Avisos para todos</h2>
+        <p className="nota">Todos os cadastrados recebem o aviso na véspera e no dia.</p>
+        <ul className="lista-simples">
+          {avisos?.map((a) => (
+            <li key={a.id}>
+              <span>
+                <strong>{a.titulo}</strong> · <span style={{ textTransform: 'capitalize' }}>{dataExtenso(a.data)}</span>
+                {a.horario ? ` · ${a.horario.slice(0, 5)}` : ''}
+              </span>
+              <form action={removerAviso}>
+                <input type="hidden" name="id" value={a.id} />
+                <BotaoEnviar className="btn perigo">Remover</BotaoEnviar>
+              </form>
+            </li>
+          ))}
+        </ul>
+        <form action={criarAviso} style={{ marginTop: 10 }}>
+          <label htmlFor="titulo">Título</label>
+          <input id="titulo" name="titulo" required placeholder="Ex.: Lavar a igreja" />
+          <div className="linha">
+            <div>
+              <label htmlFor="aviso-data">Data</label>
+              <input id="aviso-data" name="data" type="date" required min={dataBR(0)} />
+            </div>
+            <div>
+              <label htmlFor="aviso-hora">Horário</label>
+              <input id="aviso-hora" name="horario" type="time" />
+            </div>
+          </div>
+          <label htmlFor="descricao">Detalhes (opcional)</label>
+          <input id="descricao" name="descricao" />
+          <BotaoEnviar className="btn full">Criar aviso</BotaoEnviar>
+        </form>
+      </section>
+
+      {nomesSemConta.length > 0 && (
+        <section className="card">
+          <h2>Escalados sem conta ({nomesSemConta.length})</h2>
+          <p className="nota">
+            Quando a pessoa cria a conta com o mesmo nome, as escalas passam para ela sozinhas. Se o nome ficou
+            diferente, ligue aqui.
+          </p>
+          <ul className="lista-simples">
+            {nomesSemConta.map((nome) => (
+              <li key={nome}>
+                <span>
+                  <strong>{nome}</strong> · {semConta[nome]} escala{semConta[nome] > 1 ? 's' : ''}
+                </span>
+                {pessoas?.length > 0 && (
+                  <form action={vincularNome} className="inline">
+                    <input type="hidden" name="nome" value={nome} />
+                    <select name="membro_id" required defaultValue="" aria-label={`Ligar ${nome} a`}>
+                      <option value="" disabled>
+                        Ligar a...
+                      </option>
+                      {pessoas.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.nome || '(sem nome)'}
+                        </option>
+                      ))}
+                    </select>
+                    <BotaoEnviar className="btn sec peq">Ok</BotaoEnviar>
+                  </form>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section className="card">
+        <h2>Funções</h2>
         <ul className="lista-simples">
           {ministerios?.map((m) => (
             <li key={m.id}>
@@ -130,16 +215,14 @@ export default async function Admin() {
           ))}
         </ul>
         <form action={criarMinisterio} className="inline" style={{ marginTop: 10 }}>
-          <input name="nome" placeholder="Novo ministério" required />
+          <input name="nome" placeholder="Nova função" required />
           <BotaoEnviar className="btn">Adicionar</BotaoEnviar>
         </form>
       </section>
 
       <section className="card">
         <h2>Pessoas cadastradas ({pessoas?.length || 0})</h2>
-        <p className="sub" style={{ marginTop: 0, color: 'var(--muted)', fontSize: '.88rem' }}>
-          Para entrar na lista, a pessoa cria a conta no app. Quem é líder pode virar admin.
-        </p>
+        <p className="nota">Para entrar na lista, a pessoa cria a conta no app. Quem é líder pode virar admin.</p>
         <ul className="lista-simples">
           {pessoas?.map((p) => (
             <li key={p.id}>

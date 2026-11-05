@@ -30,11 +30,16 @@ export default async function MinhasEscalas() {
   if (datas.length) {
     const { data } = await supabase
       .from('escalas')
-      .select('data, ministerio_id, membro_id, profiles(nome)')
+      .select('data, ministerio_id, membro_id, membro_nome, profiles(nome)')
       .in('data', datas)
-      .neq('membro_id', user.id)
-    equipe = data || []
+    equipe = (data || []).filter((x) => x.membro_id !== user.id)
   }
+
+  const { data: avisos } = await supabase
+    .from('avisos')
+    .select('id, titulo, data, horario, descricao')
+    .gte('data', dataBR(0))
+    .order('data')
 
   const primeiroNome = (perfil?.nome || '').split(' ')[0]
 
@@ -61,7 +66,7 @@ export default async function MinhasEscalas() {
           const rel = quandoRelativo(e.data)
           const colegas = equipe
             .filter((x) => x.data === e.data && x.ministerio_id === e.ministerio_id)
-            .map((x) => x.profiles?.nome)
+            .map((x) => x.profiles?.nome || x.membro_nome)
             .filter(Boolean)
           return (
             <div className="escala" key={e.id}>
@@ -84,6 +89,33 @@ export default async function MinhasEscalas() {
           )
         })}
       </section>
+
+      {avisos?.length > 0 && (
+        <section className="card">
+          <h2>Avisos para todos</h2>
+          {avisos.map((a) => {
+            const [, m, d] = a.data.split('-')
+            const rel = quandoRelativo(a.data)
+            return (
+              <div className="escala" key={a.id}>
+                <div className="dia">
+                  <span className="n">{Number(d)}</span>
+                  <span className="m">{MESES[Number(m) - 1]}</span>
+                </div>
+                <div className="info">
+                  {rel && <span className="tag">{rel}</span>}
+                  <strong>{a.titulo}</strong>
+                  <div className="det">
+                    <span style={{ textTransform: 'capitalize' }}>{dataExtenso(a.data)}</span>
+                    {a.horario ? ` · ${a.horario.slice(0, 5)}` : ''}
+                  </div>
+                  {a.descricao && <div className="det">{a.descricao}</div>}
+                </div>
+              </div>
+            )
+          })}
+        </section>
+      )}
 
       <form action={sair} className="rodape">
         <button className="btn sec peq">Sair</button>

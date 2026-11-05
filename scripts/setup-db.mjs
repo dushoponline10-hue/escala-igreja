@@ -1,5 +1,5 @@
 // Cria as tabelas no Supabase: npm run db:setup
-import { readFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import { config } from 'dotenv'
 import pg from 'pg'
 
@@ -11,12 +11,17 @@ if (!url) {
   process.exit(1)
 }
 
-const sql = await readFile(new URL('../supabase/schema.sql', import.meta.url), 'utf8')
+const pasta = new URL('../supabase/', import.meta.url)
+const migracoes = (await readdir(pasta)).filter((f) => f.startsWith('migracao-')).sort()
+const arquivos = ['schema.sql', ...migracoes]
 const client = new pg.Client({ connectionString: url, ssl: { rejectUnauthorized: false } })
 
 try {
   await client.connect()
-  await client.query(sql)
+  for (const f of arquivos) {
+    await client.query(await readFile(new URL(f, pasta), 'utf8'))
+    console.log('ok:', f)
+  }
   console.log('Banco pronto! Tabelas e regras criadas.')
 } catch (err) {
   console.error('Erro ao criar o banco:', err.message)
