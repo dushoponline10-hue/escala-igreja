@@ -43,6 +43,7 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    '/((?!api/cron|_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|icons/).*)',
+    // tudo, menos o cron e arquivos estáticos (qualquer caminho com extensão: .png, .js, .webmanifest...)
+    '/((?!api/cron|_next/static|_next/image|.*\\..*).*)',
   ],
 }
