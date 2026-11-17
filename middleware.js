@@ -44,6 +44,6 @@ export async function middleware(request) {
 export const config = {
   matcher: [
     // tudo, menos o cron e arquivos estáticos (qualquer caminho com extensão: .png, .js, .webmanifest...)
-    '/((?!api/cron|amigosecreto|_next/static|_next/image|.*\\..*).*)',
+    '/((?!api/cron|_next/static|_next/image|.*\\..*).*)',
   ],
 }
